@@ -1,0 +1,29 @@
+# app/docker-compose.yml
+version: '3.2'
+
+networks:
+  private:
+  public:
+    external:
+      name: traefik_webgateway
+services:
+  nginx:
+    image: nginx:alpine
+    labels:
+      - traefik.backend=nginx
+      - traefik.docker.network=traefik_webgateway
+      - traefik.frontend.rule=Host:some-nginx.localhost
+      - traefik.port=80
+    networks:
+      - private
+      - public
+  mailhog:
+    image: mailhog/mailhog
+    labels:
+      - traefik.backend=mailhog
+      - traefik.docker.network=traefik_webgateway
+      - traefik.frontend.rule=Host:mailhog.localhost
+      - traefik.port=8025
+    networks:
+      - private
+      - public

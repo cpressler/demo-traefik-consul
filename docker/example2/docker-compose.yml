@@ -1,0 +1,65 @@
+
+# example from https://m.mattmclaugh.com/traefik-and-consul-catalog-example-2c33fc1480c0
+version: '3.7'
+services:
+  consul:
+    image: consul
+    command: consul agent -server -dev -client=0.0.0.0 -ui -bootstrap -log-level warn
+    ports:
+      - "8400:8400"
+      - "8500:8500"
+      - "8600:53/udp"
+
+  reverse-proxy:
+    image: reverse-proxy
+#    command: traefik --consulCatalog.endpoint=consul:8500
+    command: traefik --consul.endpoint=consul:8500
+    ports:
+      - "8080:8080"
+      - "8081:80"
+    depends_on:
+      - consul
+    links:
+      - consul
+
+#  web-server:
+#    image: crccheck/hello-world
+#    ports:
+#      - "8000:8000"
+#    environment:
+#      - SERVICE_TAGS=traefik.enable=true,traefik.frontend.entryPoints=http,traefik.frontend.rule=Host:localhost
+
+#  registrator:
+#    depends_on:
+#      - consul
+#    image: gliderlabs/registrator:master
+#    command: -internal consul://consul:8500
+#    volumes:
+#      - /var/run/docker.sock:/tmp/docker.sock
+#    links:
+#      - consul
+
+
+  serverapi:
+    depends_on:
+      - consul
+    image: "softvisionlvcp/spring-react-qatest-be:latest"
+    ports:
+      - "8180:8180"
+    environment:
+      - CONSUL_HOST=consul
+      - CONSUL_ENABLE=true
+    links:
+      - consul
+
+  frontend:
+    image: "softvisionlvcp/spring-react-qatest-ui:latest"
+    command: [nginx-debug, '-g', 'daemon off;']
+    ports:
+      - "9000:80"
+    links:
+      - consul
+    depends_on:
+      - serverapi
+    environment:
+      - SERVICE_TAGS=traefik.enable=true,traefik.frontend.entryPoints=http,traefik.frontend.rule=Host:localhost
