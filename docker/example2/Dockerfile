@@ -1,5 +1,5 @@
-FROM traefik:v1.4-alpine
+FROM traefik:v1.7.14-alpine
 
 EXPOSE 8080
 
-COPY traefik.toml /etc/traefik/traefik.toml
+COPY traefik/traefik.toml /etc/traefik/traefik.toml

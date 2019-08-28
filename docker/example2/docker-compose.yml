@@ -11,9 +11,14 @@ services:
       - "8600:53/udp"
 
   reverse-proxy:
-    image: reverse-proxy
+    build:
+      context: ./
+      dockerfile: Dockerfile
+#    image: reverse-proxy
 #    command: traefik --consulCatalog.endpoint=consul:8500
     command: traefik --consul.endpoint=consul:8500
+    volumes:
+      - ./traefik:/etc/traefik
     ports:
       - "8080:8080"
       - "8081:80"
